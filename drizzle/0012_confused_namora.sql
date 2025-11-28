@@ -1,0 +1,1 @@
+ALTER TABLE `partnerQuestionnaires` MODIFY COLUMN `accessCode` varchar(12) NOT NULL;

@@ -1,0 +1,70 @@
+{
+  "query": "\nSELECT id, questionnaireId, title, responseType \nFROM questions \nORDER BY id DESC \nLIMIT 10\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute \nSELECT id, questionnaireId, title, responseType \nFROM questions \nORDER BY id DESC \nLIMIT 10\n",
+  "rows": [
+    {
+      "id": "999005",
+      "questionnaireId": "999001",
+      "title": "Certifications Held",
+      "responseType": "6"
+    },
+    {
+      "id": "999004",
+      "questionnaireId": "999001",
+      "title": "Primary Business Type",
+      "responseType": "4"
+    },
+    {
+      "id": "999003",
+      "questionnaireId": "999001",
+      "title": "Fiscal Year End",
+      "responseType": "5"
+    },
+    {
+      "id": "999002",
+      "questionnaireId": "999001",
+      "title": "CAGE Code Verification",
+      "responseType": "2"
+    },
+    {
+      "id": "999001",
+      "questionnaireId": "999001",
+      "title": "Small Business Status",
+      "responseType": "1"
+    },
+    {
+      "id": "30202",
+      "questionnaireId": "30003",
+      "title": "annualRevenue",
+      "responseType": "1"
+    },
+    {
+      "id": "30201",
+      "questionnaireId": "30003",
+      "title": "isoCertifications",
+      "responseType": "6"
+    },
+    {
+      "id": "30200",
+      "questionnaireId": "30003",
+      "title": "itarData",
+      "responseType": "5"
+    },
+    {
+      "id": "30199",
+      "questionnaireId": "30003",
+      "title": "ddtcRegistered",
+      "responseType": "5"
+    },
+    {
+      "id": "30198",
+      "questionnaireId": "30003",
+      "title": "sbDocumentation",
+      "responseType": "5"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tquestionnaireId\ttitle\tresponseType\n999005\t999001\tCertifications Held\t6\n999004\t999001\tPrimary Business Type\t4\n999003\t999001\tFiscal Year End\t5\n999002\t999001\tCAGE Code Verification\t2\n999001\t999001\tSmall Business Status\t1\n30202\t30003\tannualRevenue\t1\n30201\t30003\tisoCertifications\t6\n30200\t30003\titarData\t5\n30199\t30003\tddtcRegistered\t5\n30198\t30003\tsbDocumentation\t5\n",
+  "stderr": "",
+  "execution_time_ms": 46
+}

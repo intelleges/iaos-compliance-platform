@@ -1,0 +1,15 @@
+{
+  "query": "\nSELECT \n  q.id as questionnaire_id,\n  q.title,\n  COUNT(qq.id) as question_count\nFROM questionnaires q\nLEFT JOIN questions qq ON qq.questionnaireId = q.id\nWHERE q.id = (\n  SELECT tq.questionnaireId \n  FROM partnerQuestionnaires pq\n  LEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\n  WHERE pq.accessCode = 'DDSETM9RNAHB'\n  LIMIT 1\n)\nGROUP BY q.id, q.title\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute \nSELECT \n  q.id as questionnaire_id,\n  q.title,\n  COUNT(qq.id) as question_count\nFROM questionnaires q\nLEFT JOIN questions qq ON qq.questionnaireId = q.id\nWHERE q.id = (\n  SELECT tq.questionnaireId \n  FROM partnerQuestionnaires pq\n  LEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\n  WHERE pq.accessCode = 'DDSETM9RNAHB'\n  LIMIT 1\n)\nGROUP BY q.id, q.title\n",
+  "rows": [
+    {
+      "questionnaire_id": "30003",
+      "title": "Annual Reps and Certs",
+      "question_count": "82"
+    }
+  ],
+  "messages": [],
+  "stdout": "questionnaire_id\ttitle\tquestion_count\n30003\tAnnual Reps and Certs\t82\n",
+  "stderr": "",
+  "execution_time_ms": 66
+}

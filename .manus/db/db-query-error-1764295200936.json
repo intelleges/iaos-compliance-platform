@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT \n  pq.id as assignment_id,\n  pq.touchpointQuestionnaireId,\n  tq.questionnaireId,\n  q.title as questionnaire_title,\n  (SELECT COUNT(*) FROM questionnaireQuestions qq WHERE qq.questionnaireId = q.id) as question_count\nFROM partnerQuestionnaires pq\nLEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\nLEFT JOIN questionnaires q ON tq.questionnaireId = q.id\nWHERE pq.accessCode = 'DDSETM9RNAHB'\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute \nSELECT \n  pq.id as assignment_id,\n  pq.touchpointQuestionnaireId,\n  tq.questionnaireId,\n  q.title as questionnaire_title,\n  (SELECT COUNT(*) FROM questionnaireQuestions qq WHERE qq.questionnaireId = q.id) as question_count\nFROM partnerQuestionnaires pq\nLEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\nLEFT JOIN questionnaires q ON tq.questionnaireId = q.id\nWHERE pq.accessCode = 'DDSETM9RNAHB'\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1146 (42S02) at line 2: Table 'ehwrnprtg5eftneyg6faqz.questionnaireQuestions' doesn't exist"
+  ]
+}

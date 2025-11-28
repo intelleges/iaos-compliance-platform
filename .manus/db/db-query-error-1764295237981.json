@@ -1,0 +1,8 @@
+{
+  "query": "\nSELECT id, questionnaireId, questionText, responseType \nFROM questions \nORDER BY id DESC \nLIMIT 10\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute \nSELECT id, questionnaireId, questionText, responseType \nFROM questions \nORDER BY id DESC \nLIMIT 10\n",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1054 (42S22) at line 2: Unknown column 'questiontext' in 'field list'"
+  ]
+}

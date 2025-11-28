@@ -1,0 +1,18 @@
+{
+  "query": "SELECT id, partnerId, touchpointQuestionnaireId, accessCode, status, progress FROM partnerQuestionnaires WHERE accessCode = 'DDSETM9RNAHB' LIMIT 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute SELECT id, partnerId, touchpointQuestionnaireId, accessCode, status, progress FROM partnerQuestionnaires WHERE accessCode = 'DDSETM9RNAHB' LIMIT 1;",
+  "rows": [
+    {
+      "id": "1",
+      "partnerId": "1",
+      "touchpointQuestionnaireId": "2",
+      "accessCode": "DDSETM9RNAHB",
+      "status": "7",
+      "progress": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tpartnerId\ttouchpointQuestionnaireId\taccessCode\tstatus\tprogress\n1\t1\t2\tDDSETM9RNAHB\t7\t0\n",
+  "stderr": "",
+  "execution_time_ms": 51
+}

@@ -1,0 +1,25 @@
+{
+  "query": "\nSELECT \n  'Assignment Info' as info_type,\n  pq.id as assignment_id,\n  tq.questionnaireId as questionnaire_id_from_touchpoint\nFROM partnerQuestionnaires pq\nLEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\nWHERE pq.accessCode = 'DDSETM9RNAHB'\n\nUNION ALL\n\nSELECT \n  'Question Count' as info_type,\n  NULL as assignment_id,\n  questionnaireId as questionnaire_id_from_touchpoint\nFROM questions\nGROUP BY questionnaireId\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute \nSELECT \n  'Assignment Info' as info_type,\n  pq.id as assignment_id,\n  tq.questionnaireId as questionnaire_id_from_touchpoint\nFROM partnerQuestionnaires pq\nLEFT JOIN touchpointQuestionnaires tq ON pq.touchpointQuestionnaireId = tq.id\nWHERE pq.accessCode = 'DDSETM9RNAHB'\n\nUNION ALL\n\nSELECT \n  'Question Count' as info_type,\n  NULL as assignment_id,\n  questionnaireId as questionnaire_id_from_touchpoint\nFROM questions\nGROUP BY questionnaireId\n",
+  "rows": [
+    {
+      "info_type": "Question Count",
+      "assignment_id": "NULL",
+      "questionnaire_id_from_touchpoint": "999001"
+    },
+    {
+      "info_type": "Question Count",
+      "assignment_id": "NULL",
+      "questionnaire_id_from_touchpoint": "30003"
+    },
+    {
+      "info_type": "Assignment Info",
+      "assignment_id": "1",
+      "questionnaire_id_from_touchpoint": "30003"
+    }
+  ],
+  "messages": [],
+  "stdout": "info_type\tassignment_id\tquestionnaire_id_from_touchpoint\nQuestion Count\tNULL\t999001\nQuestion Count\tNULL\t30003\nAssignment Info\t1\t30003\n",
+  "stderr": "",
+  "execution_time_ms": 54
+}

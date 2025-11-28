@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE partners \nSET \n  name = 'Apex Aerospace Components Inc.',\n  address1 = '2450 Innovation Drive',\n  address2 = 'Building C, Suite 300',\n  city = 'Arlington',\n  state = 'VA',\n  zipcode = '22201',\n  countryCode = 'US',\n  firstName = 'Sarah',\n  lastName = 'Mitchell',\n  title = 'Director of Compliance',\n  email = 'sarah.mitchell@apexaero.com',\n  phone = '+1 (703) 555-0142',\n  dunsNumber = '123456789',\n  cageCode = 'ABC12',\n  federalId = '12-3456789'\nWHERE id = (SELECT partnerId FROM partnerQuestionnaires WHERE accessCode = 'DDSETM9RNAHB' LIMIT 1);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute UPDATE partners \nSET \n  name = 'Apex Aerospace Components Inc.',\n  address1 = '2450 Innovation Drive',\n  address2 = 'Building C, Suite 300',\n  city = 'Arlington',\n  state = 'VA',\n  zipcode = '22201',\n  countryCode = 'US',\n  firstName = 'Sarah',\n  lastName = 'Mitchell',\n  title = 'Director of Compliance',\n  email = 'sarah.mitchell@apexaero.com',\n  phone = '+1 (703) 555-0142',\n  dunsNumber = '123456789',\n  cageCode = 'ABC12',\n  federalId = '12-3456789'\nWHERE id = (SELECT partnerId FROM partnerQuestionnaires WHERE accessCode = 'DDSETM9RNAHB' LIMIT 1);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 58
+}

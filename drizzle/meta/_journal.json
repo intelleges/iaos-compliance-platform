@@ -1,0 +1,125 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1764127554632,
+      "tag": "0000_green_manta",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1764127714428,
+      "tag": "0001_unknown_red_shift",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1764128662358,
+      "tag": "0002_kind_thunderbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1764130849588,
+      "tag": "0003_remarkable_gauntlet",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1764230798258,
+      "tag": "0004_redundant_stardust",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1764231326370,
+      "tag": "0005_zippy_tyrannus",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1764231450499,
+      "tag": "0006_talented_mother_askani",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1764232436828,
+      "tag": "0007_shallow_tarot",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1764233265998,
+      "tag": "0008_narrow_adam_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1764234182424,
+      "tag": "0009_lowly_steve_rogers",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1764238394774,
+      "tag": "0010_special_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1764239990897,
+      "tag": "0011_red_killraven",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1764243958775,
+      "tag": "0012_confused_namora",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "5",
+      "when": 1764272903095,
+      "tag": "0013_previous_bucky",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1764273035089,
+      "tag": "0014_curved_the_liberteens",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1764299289855,
+      "tag": "0015_serious_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1764300951926,
+      "tag": "0016_hesitant_thena",
+      "breakpoints": true
+    }
+  ]
+}

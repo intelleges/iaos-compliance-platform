@@ -1,0 +1,1 @@
+ALTER TABLE `partnerQuestionnaires` ADD `eSignature` text;

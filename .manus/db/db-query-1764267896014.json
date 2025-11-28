@@ -1,0 +1,162 @@
+{
+  "query": "SELECT tag, COUNT(*) as count FROM questions WHERE questionnaireId = 2 GROUP BY tag ORDER BY MIN(sortOrder)",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3DoThoLFV6pZU86.973470d1bc81 --database eHWRNpRtg5EFTnEyg6FaQZ --execute SELECT tag, COUNT(*) as count FROM questions WHERE questionnaireId = 2 GROUP BY tag ORDER BY MIN(sortOrder)",
+  "rows": [
+    {
+      "tag": "1. Response Types - TEXT_NUMBER_X",
+      "count": "3"
+    },
+    {
+      "tag": "1. Response Types - Y/N",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - DROPDOWN",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - DOLLAR",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - TEXT",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - LIST",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - Y/N/NA",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - CHECKBOX",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - NUMBER",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - DATE",
+      "count": "1"
+    },
+    {
+      "tag": "1. Response Types - List2List",
+      "count": "1"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on ANY Answer (A)",
+      "count": "2"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on YES (1)",
+      "count": "4"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on Multi-Select (M)",
+      "count": "2"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on Dropdown Code (AA)",
+      "count": "3"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on NO (0)",
+      "count": "4"
+    },
+    {
+      "tag": "3. Skip Logic - Skip on ANY Dropdown (D)",
+      "count": "2"
+    },
+    {
+      "tag": "4. SpinOff - Yes Triggers (1:QID)",
+      "count": "1"
+    },
+    {
+      "tag": "4. SpinOff - List2List AND (0+1:QID)",
+      "count": "1"
+    },
+    {
+      "tag": "4. SpinOff - No Triggers (0:QID)",
+      "count": "1"
+    },
+    {
+      "tag": "4. SpinOff - List2List OR (0^1:QID)",
+      "count": "1"
+    },
+    {
+      "tag": "4. SpinOff - Dropdown Code (AA:QID)",
+      "count": "1"
+    },
+    {
+      "tag": "4. SpinOff - Complex Multiple",
+      "count": "1"
+    },
+    {
+      "tag": "5. Email Alert - Both Yes and No",
+      "count": "1"
+    },
+    {
+      "tag": "5. Email Alert - Dropdown Routing",
+      "count": "1"
+    },
+    {
+      "tag": "5. Email Alert - No Triggers",
+      "count": "1"
+    },
+    {
+      "tag": "5. Email Alert - Yes Triggers",
+      "count": "1"
+    },
+    {
+      "tag": "5. Email Alert - Multiple Recipients",
+      "count": "1"
+    },
+    {
+      "tag": "6. Complex - Dropdown with Everything",
+      "count": "2"
+    },
+    {
+      "tag": "6. Complex - Skip + Comment + Alert",
+      "count": "1"
+    },
+    {
+      "tag": "7. Access Levels",
+      "count": "4"
+    },
+    {
+      "tag": "8. Scoring - yValue/nValue",
+      "count": "2"
+    },
+    {
+      "tag": "8. Scoring - naValue",
+      "count": "1"
+    },
+    {
+      "tag": "8. Scoring - qWeight",
+      "count": "2"
+    },
+    {
+      "tag": "9. Real World - ITAR",
+      "count": "1"
+    },
+    {
+      "tag": "9. Real World - Small Business",
+      "count": "1"
+    },
+    {
+      "tag": "9. Real World - ISO Certifications",
+      "count": "1"
+    },
+    {
+      "tag": "9. Real World - Financial",
+      "count": "1"
+    }
+  ],
+  "messages": [],
+  "stdout": "tag\tcount\n1. Response Types - TEXT_NUMBER_X\t3\n1. Response Types - Y/N\t1\n1. Response Types - DROPDOWN\t1\n1. Response Types - DOLLAR\t1\n1. Response Types - TEXT\t1\n1. Response Types - LIST\t1\n1. Response Types - Y/N/NA\t1\n1. Response Types - CHECKBOX\t1\n1. Response Types - NUMBER\t1\n1. Response Types - DATE\t1\n1. Response Types - List2List\t1\n3. Skip Logic - Skip on ANY Answer (A)\t2\n3. Skip Logic - Skip on YES (1)\t4\n3. Skip Logic - Skip on Multi-Select (M)\t2\n3. Skip Logic - Skip on Dropdown Code (AA)\t3\n3. Skip Logic - Skip on NO (0)\t4\n3. Skip Logic - Skip on ANY Dropdown (D)\t2\n4. SpinOff - Yes Triggers (1:QID)\t1\n4. SpinOff - List2List AND (0+1:QID)\t1\n4. SpinOff - No Triggers (0:QID)\t1\n4. SpinOff - List2List OR (0^1:QID)\t1\n4. SpinOff - Dropdown Code (AA:QID)\t1\n4. SpinOff - Complex Multiple\t1\n5. Email Alert - Both Yes and No\t1\n5. Email Alert - Dropdown Routing\t1\n5. Email Alert - No Triggers\t1\n5. Email Alert - Yes Triggers\t1\n5. Email Alert - Multiple Recipients\t1\n6. Complex - Dropdown with Everything\t2\n6. Complex - Skip + Comment + Alert\t1\n7. Access Levels\t4\n8. Scoring - yValue/nValue\t2\n8. Scoring - naValue\t1\n8. Scoring - qWeight\t2\n9. Real World - ITAR\t1\n9. Real World - Small Business\t1\n9. Real World - ISO Certifications\t1\n9. Real World - Financial\t1\n",
+  "stderr": "",
+  "execution_time_ms": 56
+}

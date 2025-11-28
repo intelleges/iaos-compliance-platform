@@ -1,0 +1,1 @@
+ALTER TABLE `questions` MODIFY COLUMN `commentType` varchar(50);
