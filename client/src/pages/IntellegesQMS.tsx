@@ -6939,74 +6939,36 @@ export default function IntellegesQMS() {
                       // Entities that only have spreadsheet upload (no manual)
                       const spreadsheetOnlyEntities = ['questionnaire', 'ams', 'cms'];
                       
-                      // Handle Add with submenu (Manual/Spreadsheet)
+                      // Handle Add - directly open spreadsheet upload modal for all entities
                       if (sub.hasSubmenu) {
-                        // Filter submenu based on entity type
-                        const filteredSubmenu = spreadsheetOnlyEntities.includes(item.id)
-                          ? sub.submenu.filter(s => s.id === 'spreadsheet')
-                          : sub.submenu;
-
-                        // Direct action handler for opening modals
-                        const handleDirectAction = (actionType: string) => {
-                          if (actionType === 'manual') {
-                            if (item.id === 'partner') {
-                              setPartnerManualModal({ open: true, mode: 'add', partner: null });
-                            } else if (item.id === 'protocol') {
-                              setProtocolModal({ open: true, protocol: null });
-                            } else if (item.id === 'touchpoint') {
-                              setTouchpointModal({ open: true, touchpoint: null });
-                            } else if (item.id === 'partnertype') {
-                              setPartnertypeModal({ open: true, partnertype: null });
-                            } else if (item.id === 'group') {
-                              setGroupModal({ open: true, group: null });
-                            } else if (item.id === 'enterprise') {
-                              setEnterpriseModal({ open: true, enterprise: null });
-                            } else if (item.id === 'person') {
-                              setManualModal({ open: true, entity: 'person' });
-                            } else {
-                              setManualModal({ open: true, entity: item.id });
-                            }
-                          } else if (actionType === 'spreadsheet') {
-                            if (item.id === 'questionnaire') {
-                              setQuestionnaireModal({ open: true, step: 1 });
-                            } else if (item.id === 'partner') {
-                              setPartnerUploadModal({ open: true });
-                            } else {
-                              setSpreadsheetUploadModal({ open: true, entity: item.id });
-                            }
-                          }
-                        };
-
                         return (
-                          <div key={sub.id}>
-                            <button
-                              onClick={() => {
-                                // If only one option (spreadsheet only), trigger directly
-                                if (spreadsheetOnlyEntities.includes(item.id)) {
-                                  handleDirectAction('spreadsheet');
-                                } else {
-                                  toggleSubMenu(`${item.id}-${sub.id}`);
-                                }
-                              }}
-                              className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 rounded-md hover:bg-gray-100">
-                              <SubIcon className="w-4 h-4" />
-                              <span className="flex-1 text-left">{sub.label}</span>
-                              {!spreadsheetOnlyEntities.includes(item.id) && (
-                                isAddExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />
-                              )}
-                            </button>
-                            {isAddExpanded && !spreadsheetOnlyEntities.includes(item.id) && (
-                              <div className="ml-6 mt-1 space-y-1">
-                                {filteredSubmenu.map(subItem => (
-                                  <button key={subItem.id}
-                                    onClick={() => handleDirectAction(subItem.id)}
-                                    className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-500 rounded-md hover:bg-gray-100">
-                                    <span className="text-left">{subItem.label}</span>
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          <button key={sub.id}
+                            onClick={() => {
+                              // Direct action - open spreadsheet upload modal immediately
+                              if (item.id === 'questionnaire') {
+                                setQuestionnaireModal({ open: true, step: 1 });
+                              } else if (item.id === 'partner') {
+                                setPartnerUploadModal({ open: true });
+                              } else if (item.id === 'person') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'person' });
+                              } else if (item.id === 'protocol') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'protocol' });
+                              } else if (item.id === 'touchpoint') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'touchpoint' });
+                              } else if (item.id === 'partnertype') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'partnertype' });
+                              } else if (item.id === 'group') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'group' });
+                              } else if (item.id === 'enterprise') {
+                                setSpreadsheetUploadModal({ open: true, entity: 'enterprise' });
+                              } else {
+                                setSpreadsheetUploadModal({ open: true, entity: item.id });
+                              }
+                            }}
+                            className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 rounded-md hover:bg-gray-100">
+                            <SubIcon className="w-4 h-4" />
+                            <span className="flex-1 text-left">{sub.label}</span>
+                          </button>
                         );
                       }
                       
