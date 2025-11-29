@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Menu, ChevronDown, ChevronRight, Plus, Archive, Search, Eye, RotateCcw, Building2, Users, FileText, ClipboardList, Settings, Shield, X, Upload, FileSpreadsheet, Sparkles, Loader2, Download, Filter, ChevronLeft, MoreVertical, Lock, ShieldCheck, History, Wrench, BarChart3, MessageSquare, CheckCircle, AlertTriangle, Clock, Calendar, HelpCircle, User, Award, Bell, ExternalLink, RefreshCw, FileCheck, FileClock, FileX, AlertCircle, TrendingUp, Info } from 'lucide-react';
 import { ContactSupplierDialog } from '@/components/ContactSupplierDialog';
 
@@ -49,7 +49,7 @@ export default function IntellegesQMS() {
   const [qmLevel, setQmLevel] = useState('');
   const [qmFile, setQmFile] = useState<File | null>(null);
   const [qmUploading, setQmUploading] = useState(false);
-  const qmFileInputRef = React.useRef<HTMLInputElement>(null);
+  const qmFileInputRef = useRef<HTMLInputElement>(null);
 
   // Protocol Modal Form State
   const [protocolForm, setProtocolForm] = useState({
