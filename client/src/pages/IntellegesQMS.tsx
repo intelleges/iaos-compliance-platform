@@ -24,6 +24,12 @@ export default function IntellegesQMS() {
   
   // Partner Management State
   const [partnerUploadModal, setPartnerUploadModal] = useState({ open: false });
+  const [partnerUploadForm, setPartnerUploadForm] = useState({
+    protocol: '', touchpoint: '', partnertype: '', group: ''
+  });
+  const [partnerUploadFile, setPartnerUploadFile] = useState<File | null>(null);
+  const [partnerUploading, setPartnerUploading] = useState(false);
+  const partnerFileInputRef = useRef<HTMLInputElement>(null);
   const [partnerManualModal, setPartnerManualModal] = useState({ open: false, mode: 'add', partner: null });
   const [personFormTab, setPersonFormTab] = useState('personal'); // 'personal', 'address', 'organization', 'access'
   const [spreadsheetUploadModal, setSpreadsheetUploadModal] = useState({ open: false, entity: null });
@@ -3663,79 +3669,219 @@ export default function IntellegesQMS() {
   const renderPartnerUploadModal = () => {
     if (!partnerUploadModal.open) return null;
 
+    const isFormValid = partnerUploadForm.protocol && partnerUploadForm.touchpoint &&
+                        partnerUploadForm.partnertype && partnerUploadForm.group;
+    const canUpload = isFormValid && partnerUploadFile && !partnerUploading;
+
+    const handlePartnerUploadClose = () => {
+      setPartnerUploadForm({ protocol: '', touchpoint: '', partnertype: '', group: '' });
+      setPartnerUploadFile(null);
+      setPartnerUploadModal({ open: false });
+    };
+
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        setPartnerUploadFile(e.target.files[0]);
+      }
+    };
+
+    const handlePartnerUpload = async () => {
+      if (!canUpload || !partnerUploadFile) return;
+
+      setPartnerUploading(true);
+      try {
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const base64Data = event.target?.result as string;
+            const base64Content = base64Data.split(',')[1];
+
+            const response = await fetch('/api/trpc/partners.uploadSpreadsheet', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                json: {
+                  protocolId: parseInt(partnerUploadForm.protocol),
+                  touchpointId: parseInt(partnerUploadForm.touchpoint),
+                  partnertypeId: parseInt(partnerUploadForm.partnertype),
+                  groupId: parseInt(partnerUploadForm.group),
+                  fileData: base64Content,
+                  fileName: partnerUploadFile.name,
+                }
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => null);
+              const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to upload partners';
+              throw new Error(errorMsg);
+            }
+
+            const result = await response.json();
+            const partnersImported = result.result?.data?.json?.partnersImported || 0;
+
+            alert(`Successfully imported ${partnersImported} partners!`);
+            handlePartnerUploadClose();
+          } catch (error) {
+            alert(error instanceof Error ? error.message : 'Failed to upload partners');
+          } finally {
+            setPartnerUploading(false);
+          }
+        };
+
+        reader.onerror = () => {
+          alert('Failed to read file');
+          setPartnerUploading(false);
+        };
+
+        reader.readAsDataURL(partnerUploadFile);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to upload partners');
+        setPartnerUploading(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setPartnerUploadModal({ open: false })}
+        onClick={handlePartnerUploadClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Upload Partner</h2>
-            <button onClick={() => setPartnerUploadModal({ open: false })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handlePartnerUploadClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">1. Please select a protocol</label>
-              <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                <option>Certs and Reps</option>
-                <option>Supplier Onboarding</option>
-                <option>Risk Assessment</option>
+              <label className="block text-sm font-medium text-gray-700 mb-1">1. Please select a protocol *</label>
+              <select
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                value={partnerUploadForm.protocol}
+                onChange={(e) => setPartnerUploadForm({ ...partnerUploadForm, protocol: e.target.value })}
+              >
+                <option value="">Select Protocol...</option>
+                <option value="1">Certs and Reps</option>
+                <option value="2">Supplier Onboarding</option>
+                <option value="3">Risk Assessment</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">2. Please select a touchpoint</label>
-              <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
-                <option>Reps and Certs 2025</option>
-                <option>Reps and Certs 2024</option>
-                <option>Q1 Onboarding</option>
+              <label className="block text-sm font-medium text-gray-700 mb-1">2. Please select a touchpoint *</label>
+              <select
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                value={partnerUploadForm.touchpoint}
+                onChange={(e) => setPartnerUploadForm({ ...partnerUploadForm, touchpoint: e.target.value })}
+              >
+                <option value="">Select Touchpoint...</option>
+                <option value="1">Reps and Certs 2025</option>
+                <option value="2">Reps and Certs 2024</option>
+                <option value="3">Q1 Onboarding</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">3. Please select a partnertype</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">3. Please select a partnertype *</label>
               <div className="flex gap-2">
-                <select className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
-                  <option>Supplier</option>
-                  <option>Investor</option>
-                  <option>Validator</option>
+                <select
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={partnerUploadForm.partnertype}
+                  onChange={(e) => setPartnerUploadForm({ ...partnerUploadForm, partnertype: e.target.value })}
+                >
+                  <option value="">Select Partnertype...</option>
+                  <option value="1">Supplier</option>
+                  <option value="2">Investor</option>
+                  <option value="3">Validator</option>
                 </select>
-                <button className="px-3 py-2 text-sm text-blue-600 hover:underline whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={() => setPartnertypeModal({ open: true, partnertype: null })}
+                  className="px-3 py-2 text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
                   Add Partner Type
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">4. Please select a group</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">4. Please select a group *</label>
               <div className="flex gap-2">
-                <select className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm">
-                  <option>CME</option>
-                  <option>CMO</option>
-                  <option>CMY</option>
-                  <option>CNO</option>
-                  <option>COV</option>
+                <select
+                  className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={partnerUploadForm.group}
+                  onChange={(e) => setPartnerUploadForm({ ...partnerUploadForm, group: e.target.value })}
+                >
+                  <option value="">Select Group...</option>
+                  <option value="1">CME</option>
+                  <option value="2">CMO</option>
+                  <option value="3">CMY</option>
+                  <option value="4">CNO</option>
+                  <option value="5">COV</option>
                 </select>
-                <button className="px-3 py-2 text-sm text-blue-600 hover:underline whitespace-nowrap">
+                <button
+                  type="button"
+                  onClick={() => setGroupModal({ open: true, group: null })}
+                  className="px-3 py-2 text-sm text-blue-600 hover:underline whitespace-nowrap"
+                >
                   Add Group
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">5. Please select an Excel file containing the partner info</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 cursor-pointer">
-                <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                <button className="px-4 py-2 bg-gray-100 rounded text-sm font-medium hover:bg-gray-200">
-                  Select...
-                </button>
-                <p className="text-xs text-gray-500 mt-2">Maximum allowed file size: 10 MB</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">5. Please select an Excel file containing the partner info *</label>
+              <div
+                className={`border-2 border-dashed rounded-lg p-6 text-center ${
+                  isFormValid ? 'border-blue-400 hover:border-blue-500 cursor-pointer' : 'border-gray-300'
+                }`}
+                onClick={() => isFormValid && partnerFileInputRef.current?.click()}
+              >
+                <input
+                  ref={partnerFileInputRef}
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  disabled={!isFormValid}
+                />
+                {partnerUploadFile ? (
+                  <div className="space-y-2">
+                    <Upload className="w-8 h-8 mx-auto text-green-500" />
+                    <p className="font-medium text-gray-800">{partnerUploadFile.name}</p>
+                    <p className="text-sm text-gray-500">{(partnerUploadFile.size / 1024).toFixed(2)} KB</p>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setPartnerUploadFile(null); }}
+                      className="text-sm text-red-600 hover:text-red-700 underline"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className={`w-8 h-8 mx-auto mb-2 ${isFormValid ? 'text-blue-500' : 'text-gray-400'}`} />
+                    <button
+                      type="button"
+                      disabled={!isFormValid}
+                      className={`px-4 py-2 rounded text-sm font-medium ${
+                        isFormValid ? 'bg-blue-100 text-blue-700 hover:bg-blue-200' : 'bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      Select...
+                    </button>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {isFormValid ? 'Maximum allowed file size: 10 MB' : 'Complete selections above to enable upload'}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
 
@@ -3753,14 +3899,20 @@ export default function IntellegesQMS() {
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3">
-            <button 
-              onClick={() => setPartnerUploadModal({ open: false })}
+            <button
+              onClick={handlePartnerUploadClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={partnerUploading}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Upload Partners
+            <button
+              onClick={handlePartnerUpload}
+              disabled={!canUpload}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2496F4' }}
+            >
+              {partnerUploading ? 'Uploading...' : 'Upload Partners'}
             </button>
           </div>
         </div>
