@@ -35,6 +35,15 @@ export default function IntellegesQMS() {
   const [groupModal, setGroupModal] = useState({ open: false, group: null });
   const [questionnaireModal, setQuestionnaireModal] = useState({ open: false, step: 1 });
   const [enterpriseModal, setEnterpriseModal] = useState({ open: false, enterprise: null });
+
+  // Questionnaire Import Modal State
+  const [qmProtocol, setQmProtocol] = useState('');
+  const [qmTouchpoint, setQmTouchpoint] = useState('');
+  const [qmPartnertype, setQmPartnertype] = useState('');
+  const [qmLevel, setQmLevel] = useState('');
+  const [qmFile, setQmFile] = useState<File | null>(null);
+  const [qmUploading, setQmUploading] = useState(false);
+  const qmFileInputRef = React.useRef<HTMLInputElement>(null);
   
   const [partnerSearchFilters, setPartnerSearchFilters] = useState({
     protocol: '', touchpoint: '', partnerType: '', internalId: '', name: '',
@@ -4531,18 +4540,147 @@ export default function IntellegesQMS() {
   const renderQuestionnaireModal = () => {
     if (!questionnaireModal.open) return null;
 
+    // Check if all 4 fields have values
+    const allFieldsSelected = qmProtocol !== '' && qmTouchpoint !== '' && qmPartnertype !== '' && qmLevel !== '';
+    const canSubmit = allFieldsSelected && qmFile !== null && !qmUploading;
+
+    // Helper to convert level string to number for API
+    const getLevelNumber = (level: string): number => {
+      const levelMap: Record<string, number> = {
+        'company': 1, 'part-number': 2, 'site': 3, 'contract': 4, 'product-line': 5
+      };
+      return levelMap[level] || 1;
+    };
+
+    // Helper to get partnertype ID
+    const getPartnertypeId = (pt: string): number => {
+      const ptMap: Record<string, number> = {
+        'domestic': 1, 'international': 2, 'small-business': 3
+      };
+      return ptMap[pt] || 1;
+    };
+
+    // Handle file selection
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        setQmFile(e.target.files[0]);
+      }
+    };
+
+    // Handle form submission
+    const handleSubmit = async () => {
+      if (!canSubmit || !qmFile) return;
+
+      setQmUploading(true);
+      try {
+        // Create questionnaire first
+        const createResponse = await fetch('/api/trpc/questionnaireBuilder.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // Include session cookie for auth
+          body: JSON.stringify({
+            json: {
+              title: `QMS Import - ${qmFile.name}`,
+              description: `Imported QMS questionnaire for ${qmTouchpoint}`,
+              partnerTypeId: getPartnertypeId(qmPartnertype),
+              levelType: getLevelNumber(qmLevel),
+            }
+          }),
+        });
+
+        if (!createResponse.ok) {
+          const errorData = await createResponse.json().catch(() => null);
+          const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to create questionnaire';
+          throw new Error(errorMsg);
+        }
+
+        const createResult = await createResponse.json();
+        const questionnaireId = createResult.result?.data?.json?.id;
+
+        if (!questionnaireId) {
+          throw new Error('No questionnaire ID returned');
+        }
+
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const base64Data = event.target?.result as string;
+            const base64Content = base64Data.split(',')[1]; // Remove data:... prefix
+
+            // Upload QMS data
+            const uploadResponse = await fetch('/api/trpc/questionnaireBuilder.uploadQMS', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include', // Include session cookie for auth
+              body: JSON.stringify({
+                json: {
+                  questionnaireId,
+                  fileData: base64Content,
+                  mode: 'insert',
+                }
+              }),
+            });
+
+            if (!uploadResponse.ok) {
+              const errorData = await uploadResponse.json().catch(() => null);
+              const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to upload questionnaire data';
+              throw new Error(errorMsg);
+            }
+
+            const uploadResult = await uploadResponse.json();
+            const questionsImported = uploadResult.result?.data?.json?.questionsImported || 0;
+
+            alert(`Successfully imported ${questionsImported} questions!`);
+
+            // Reset form and close modal
+            setQmProtocol('');
+            setQmTouchpoint('');
+            setQmPartnertype('');
+            setQmLevel('');
+            setQmFile(null);
+            setQuestionnaireModal({ open: false, step: 1 });
+          } catch (error) {
+            alert(error instanceof Error ? error.message : 'Failed to import questionnaire');
+          } finally {
+            setQmUploading(false);
+          }
+        };
+
+        reader.onerror = () => {
+          alert('Failed to read file');
+          setQmUploading(false);
+        };
+
+        reader.readAsDataURL(qmFile);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create questionnaire');
+        setQmUploading(false);
+      }
+    };
+
+    // Reset form when closing modal
+    const handleClose = () => {
+      setQmProtocol('');
+      setQmTouchpoint('');
+      setQmPartnertype('');
+      setQmLevel('');
+      setQmFile(null);
+      setQuestionnaireModal({ open: false, step: 1 });
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setQuestionnaireModal({ open: false, step: 1 })}
+        onClick={handleClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-2xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Questionnaire</h2>
-            <button onClick={() => setQuestionnaireModal({ open: false, step: 1 })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4564,7 +4702,14 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4 ml-8">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Protocol *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={qmProtocol}
+                    onChange={(e) => {
+                      setQmProtocol(e.target.value);
+                      setQmTouchpoint(''); // Reset touchpoint when protocol changes
+                    }}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Protocol...</option>
                     <option value="cmmc">CMMC Certification</option>
                     <option value="reps-certs">Annual Reps & Certs</option>
@@ -4574,7 +4719,12 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Touchpoint *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={qmTouchpoint}
+                    onChange={(e) => setQmTouchpoint(e.target.value)}
+                    disabled={!qmProtocol}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  >
                     <option value="">Select Touchpoint...</option>
                     <option value="cmmc-2025">CMMC Annual Review 2025</option>
                     <option value="reps-2025">Reps and Certs 2025</option>
@@ -4592,17 +4742,31 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4 ml-8">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Partnertype *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={qmPartnertype}
+                    onChange={(e) => setQmPartnertype(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Partnertype...</option>
                     <option value="domestic">Domestic</option>
                     <option value="international">International</option>
                     <option value="small-business">Small Business</option>
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">U.S.-based suppliers</p>
+                  {qmPartnertype && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      {qmPartnertype === 'domestic' && 'U.S.-based suppliers'}
+                      {qmPartnertype === 'international' && 'Non-U.S. suppliers'}
+                      {qmPartnertype === 'small-business' && 'Small business suppliers'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Level / Cardinality *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={qmLevel}
+                    onChange={(e) => setQmLevel(e.target.value)}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Level...</option>
                     <option value="company">Company Level</option>
                     <option value="part-number">Part Number Level</option>
@@ -4617,26 +4781,76 @@ export default function IntellegesQMS() {
             {/* Step 3: Upload Questionnaire Spreadsheet */}
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-6 h-6 rounded-full bg-gray-300 text-white text-xs flex items-center justify-center font-medium">3</span>
+                <span className={`w-6 h-6 rounded-full ${allFieldsSelected ? 'bg-blue-500' : 'bg-gray-300'} text-white text-xs flex items-center justify-center font-medium`}>3</span>
                 <h3 className="font-medium text-gray-800">Upload Questionnaire Spreadsheet</h3>
               </div>
               <div className="ml-8">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
-                  <p className="text-sm text-gray-500">Complete the selections above to enable upload</p>
+                <div className={`border-2 border-dashed rounded-lg p-8 text-center ${allFieldsSelected ? 'border-blue-400 bg-blue-50' : 'border-gray-300 bg-gray-50'}`}>
+                  {qmFile ? (
+                    <div className="space-y-2">
+                      <Upload className="w-8 h-8 mx-auto text-green-500" />
+                      <p className="font-medium text-gray-800">{qmFile.name}</p>
+                      <p className="text-sm text-gray-500">{(qmFile.size / 1024).toFixed(2)} KB</p>
+                      <button
+                        type="button"
+                        onClick={() => setQmFile(null)}
+                        className="text-sm text-red-600 hover:text-red-700 underline"
+                      >
+                        Remove file
+                      </button>
+                    </div>
+                  ) : allFieldsSelected ? (
+                    <div className="space-y-2">
+                      <Upload className="w-8 h-8 mx-auto text-blue-500" />
+                      <input
+                        ref={qmFileInputRef}
+                        type="file"
+                        accept=".xlsx,.xls"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => qmFileInputRef.current?.click()}
+                        className="text-blue-600 hover:text-blue-700 font-medium underline"
+                      >
+                        Choose file
+                      </button>
+                      <p className="text-sm text-gray-500">Upload Excel questionnaire template (.xlsx, .xls)</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <Upload className="w-8 h-8 mx-auto text-gray-400" />
+                      <p className="text-sm text-gray-500">Complete the selections above to enable upload</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setQuestionnaireModal({ open: false, step: 1 })}
-              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+            <button
+              onClick={handleClose}
+              disabled={qmUploading}
+              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Load Questionnaire
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              style={{ backgroundColor: canSubmit ? '#2496F4' : '#9CA3AF' }}
+            >
+              {qmUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Importing...
+                </>
+              ) : (
+                'Load Questionnaire'
+              )}
             </button>
           </div>
         </div>

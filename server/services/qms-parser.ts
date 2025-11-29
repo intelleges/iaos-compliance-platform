@@ -179,62 +179,73 @@ export function validateQMSRow(row: QMSRow, rowIndex: number): QMSValidationErro
 }
 
 /**
- * Convert QMS row to database question object
+ * Convert QMS row to database question object for INSERT
+ * Note: Does NOT set id field - let database auto-increment handle it
  */
 export function qmsRowToQuestion(row: QMSRow, questionnaireId: number) {
   return {
-    id: row.QID,
     questionnaireId,
-    
+
     // Core fields
     question: row.Question,
     name: row.Title, // Internal name
     title: row.Title, // Display title
-    
+
     // Section & Organization
     page: row.Page || null,
     sectionCode: row.Surveyset || null,
-    
+
     // Response configuration
     responseType: convertResponseType(row.Response),
     required: row.Required === 1,
-    
+
     // Validation
     minLength: row.Length || 0,
     titleLength: row.titleLength || 0,
-    
+
     // Skip Logic
     hasSkipLogic: row.skipLogic === 'Y',
     skipLogicTrigger: row.skipLogicAnswer || null,
     skipLogicTarget: row.skipLogicJump || null,
-    
+
     // Conditional UI Messages
     commentMessage: row.CommentBoxMessageText || null,
     uploadMessage: row.UploadMessageText || null,
     calendarMessage: row.CalendarMessageText || null,
     commentType: row.CommentType || null,
-    
+
     // Scoring
     yesScore: row.yValue ?? 1,
     noScore: row.nValue ?? 0,
     naScore: row.naValue ?? -1,
     otherScore: row.otherValue ?? -1,
     qWeight: row.qWeight?.toString() || '0.00',
-    
+
     // Sub-Questionnaires
     hasSpinoff: row.spinOffQuestionnaire === 'Y',
     spinoffId: row.spinoffid || null,
-    
+
     // Email Alerts
     hasEmailAlert: row.emailalert === 'Y',
     emailAlertList: row.emailalertlist || null,
-    
+
     // Access Control
     accessLevel: row.accessLevel || 0,
-    
+
     // Archive pattern
     active: true,
-    sortOrder: row.QID,
+    sortOrder: row.QID, // Use QID from Excel for ordering
+  };
+}
+
+/**
+ * Convert QMS row to database question object for UPDATE
+ * Includes id field for matching existing records
+ */
+export function qmsRowToQuestionUpdate(row: QMSRow, questionnaireId: number) {
+  return {
+    id: row.QID,
+    ...qmsRowToQuestion(row, questionnaireId),
   };
 }
 
@@ -341,8 +352,12 @@ export async function importQMSExcel(
     }
     
     result.success = true;
-    result.summary = `Successfully imported ${result.questionsImported} questions`;
-    
+    if (mode === 'update') {
+      result.summary = `Successfully updated ${result.questionsUpdated} questions`;
+    } else {
+      result.summary = `Successfully imported ${result.questionsImported} questions`;
+    }
+
   } catch (error) {
     result.errors.push({
       row: 0,
