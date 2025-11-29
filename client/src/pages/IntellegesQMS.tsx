@@ -44,7 +44,38 @@ export default function IntellegesQMS() {
   const [qmFile, setQmFile] = useState<File | null>(null);
   const [qmUploading, setQmUploading] = useState(false);
   const qmFileInputRef = React.useRef<HTMLInputElement>(null);
-  
+
+  // Protocol Modal Form State
+  const [protocolForm, setProtocolForm] = useState({
+    enterpriseType: '', protocolName: '', endDate: '', keywords: '', domain: '', agency: '', purpose: ''
+  });
+  const [protocolSaving, setProtocolSaving] = useState(false);
+
+  // Touchpoint Modal Form State
+  const [touchpointForm, setTouchpointForm] = useState({
+    protocol: '', frequency: '', sponsor: '', admin: '', locked: 'no', reminder: 'yes', purpose: '', startDate: '', endDate: ''
+  });
+  const [touchpointSaving, setTouchpointSaving] = useState(false);
+
+  // Partnertype Modal Form State
+  const [partnertypeForm, setPartnertypeForm] = useState({
+    touchpoint: '', category: '', name: '', description: ''
+  });
+  const [partnertypeSaving, setPartnertypeSaving] = useState(false);
+
+  // Group Modal Form State
+  const [groupForm, setGroupForm] = useState({
+    touchpoint: '', name: '', description: '', collection: 'opened'
+  });
+  const [groupSaving, setGroupSaving] = useState(false);
+
+  // Enterprise Modal Form State
+  const [enterpriseForm, setEnterpriseForm] = useState({
+    name: '', country: 'United States', address1: '', address2: '', city: '', state: '', zipcode: '',
+    licenseType: 'trial', partnerMax: 100, startDate: '', endDate: ''
+  });
+  const [enterpriseSaving, setEnterpriseSaving] = useState(false);
+
   const [partnerSearchFilters, setPartnerSearchFilters] = useState({
     protocol: '', touchpoint: '', partnerType: '', internalId: '', name: '',
     address1: '', address2: '', city: '', state: '', province: '', zipCode: '',
@@ -4040,18 +4071,48 @@ export default function IntellegesQMS() {
   const renderProtocolModal = () => {
     if (!protocolModal.open) return null;
 
+    const isFormValid = protocolForm.enterpriseType && protocolForm.protocolName && protocolForm.endDate;
+
+    const handleProtocolClose = () => {
+      setProtocolForm({ enterpriseType: '', protocolName: '', endDate: '', keywords: '', domain: '', agency: '', purpose: '' });
+      setProtocolModal({ open: false, protocol: null });
+    };
+
+    const handleProtocolSave = async () => {
+      if (!isFormValid) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      setProtocolSaving(true);
+      try {
+        const response = await fetch('/api/trpc/protocols.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ json: protocolForm }),
+        });
+        if (!response.ok) throw new Error('Failed to create protocol');
+        alert('Protocol created successfully!');
+        handleProtocolClose();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create protocol');
+      } finally {
+        setProtocolSaving(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setProtocolModal({ open: false, protocol: null })}
+        onClick={handleProtocolClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Protocol - Manual</h2>
-            <button onClick={() => setProtocolModal({ open: false, protocol: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleProtocolClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4063,7 +4124,11 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Enterprise Type *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={protocolForm.enterpriseType}
+                    onChange={(e) => setProtocolForm({ ...protocolForm, enterpriseType: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Type...</option>
                     <option value="dod">DoD (Defense)</option>
                     <option value="non-dod">Non-DoD (Federal Civilian)</option>
@@ -4075,7 +4140,11 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Protocol Name *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={protocolForm.protocolName}
+                    onChange={(e) => setProtocolForm({ ...protocolForm, protocolName: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Protocol...</option>
                     <option value="baa">Buy American Act (BAA)</option>
                     <option value="taa">Trade Agreements Act (TAA)</option>
@@ -4095,7 +4164,12 @@ export default function IntellegesQMS() {
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">End Date *</label>
-                <input type="date" className="w-full max-w-xs border border-gray-300 rounded px-3 py-2 text-sm" />
+                <input
+                  type="date"
+                  value={protocolForm.endDate}
+                  onChange={(e) => setProtocolForm({ ...protocolForm, endDate: e.target.value })}
+                  className="w-full max-w-xs border border-gray-300 rounded px-3 py-2 text-sm"
+                />
               </div>
             </div>
 
@@ -4105,21 +4179,31 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Risks if Non-Compliant (Auto-filled)</label>
-                  <textarea 
-                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-20 bg-gray-50" 
+                  <textarea
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-20 bg-gray-50"
                     placeholder="Risks will be auto-filled when protocol is selected..."
                     readOnly
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Keywords</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="compliance, audit, reporting..." />
+                  <input
+                    type="text"
+                    value={protocolForm.keywords}
+                    onChange={(e) => setProtocolForm({ ...protocolForm, keywords: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    placeholder="compliance, audit, reporting..."
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Domain (Data Collection Type)</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={protocolForm.domain}
+                    onChange={(e) => setProtocolForm({ ...protocolForm, domain: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select...</option>
                     <option value="single">Single Person - One respondent per entity</option>
                     <option value="multi">Multi-Person - Multiple respondents from Partner</option>
@@ -4127,7 +4211,11 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Requiring Agency</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={protocolForm.agency}
+                    onChange={(e) => setProtocolForm({ ...protocolForm, agency: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Agency...</option>
                     <option value="dod">Department of Defense (DoD)</option>
                     <option value="hhs">Department of Health and Human Services (HHS)</option>
@@ -4181,24 +4269,35 @@ export default function IntellegesQMS() {
                 </button>
               </div>
               <p className="text-xs text-gray-500 mb-2">Auto-generated based on protocol selection. Click "Generate with AI" to create a customized purpose based on all your selections, or edit manually.</p>
-              <textarea 
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-24" 
+              <textarea
+                value={protocolForm.purpose}
+                onChange={(e) => setProtocolForm({ ...protocolForm, purpose: e.target.value })}
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-24"
                 placeholder="Purpose will be auto-generated when a protocol is selected..."
               />
             </div>
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setProtocolModal({ open: false, protocol: null })}
-              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+            <button
+              onClick={handleProtocolClose}
+              disabled={protocolSaving}
+              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Save
+            <button
+              onClick={handleProtocolSave}
+              disabled={!isFormValid || protocolSaving}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 flex items-center gap-2"
+              style={{ backgroundColor: isFormValid ? '#2496F4' : '#9CA3AF' }}
+            >
+              {protocolSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save'}
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded bg-gray-500 hover:bg-gray-600">
+            <button
+              onClick={() => setProtocolForm({ enterpriseType: '', protocolName: '', endDate: '', keywords: '', domain: '', agency: '', purpose: '' })}
+              className="px-4 py-2 text-sm text-white rounded bg-gray-500 hover:bg-gray-600"
+            >
               Clear
             </button>
           </div>
@@ -4211,18 +4310,48 @@ export default function IntellegesQMS() {
   const renderTouchpointModal = () => {
     if (!touchpointModal.open) return null;
 
+    const isFormValid = touchpointForm.protocol && touchpointForm.frequency && touchpointForm.startDate && touchpointForm.endDate;
+
+    const handleTouchpointClose = () => {
+      setTouchpointForm({ protocol: '', frequency: '', sponsor: '', admin: '', locked: 'no', reminder: 'yes', purpose: '', startDate: '', endDate: '' });
+      setTouchpointModal({ open: false, touchpoint: null });
+    };
+
+    const handleTouchpointSave = async () => {
+      if (!isFormValid) {
+        alert('Please fill in all required fields');
+        return;
+      }
+      setTouchpointSaving(true);
+      try {
+        const response = await fetch('/api/trpc/touchpoint.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ json: touchpointForm }),
+        });
+        if (!response.ok) throw new Error('Failed to create touchpoint');
+        alert('Touchpoint created successfully!');
+        handleTouchpointClose();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create touchpoint');
+      } finally {
+        setTouchpointSaving(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setTouchpointModal({ open: false, touchpoint: null })}
+        onClick={handleTouchpointClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Touchpoint - Manual</h2>
-            <button onClick={() => setTouchpointModal({ open: false, touchpoint: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleTouchpointClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4234,7 +4363,11 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4 mb-2">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Protocol *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={touchpointForm.protocol}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, protocol: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Protocol...</option>
                     <option value="cmmc">CMMC Certification</option>
                     <option value="reps-certs">Annual Reps & Certs</option>
@@ -4246,7 +4379,11 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Frequency *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={touchpointForm.frequency}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, frequency: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Frequency...</option>
                     <option value="annual">Annual</option>
                     <option value="quarterly">Quarterly</option>
@@ -4274,7 +4411,11 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Sponsor (Accountable)</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={touchpointForm.sponsor}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, sponsor: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Sponsor...</option>
                     <option value="john">John Smith - Compliance Director</option>
                     <option value="jane">Jane Doe - Supply Chain Manager</option>
@@ -4285,7 +4426,11 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Admin (Responsible)</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    value={touchpointForm.admin}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, admin: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
                     <option value="">Select Admin...</option>
                     <option value="john">John Smith - Compliance Director</option>
                     <option value="jane">Jane Doe - Supply Chain Manager</option>
@@ -4310,10 +4455,10 @@ export default function IntellegesQMS() {
                   <p className="text-xs text-gray-500 mb-2">If locked, questionnaire cannot be reopened without RBAC authorization</p>
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-1 text-sm">
-                      <input type="radio" name="locked" value="yes" /> Yes
+                      <input type="radio" name="locked" value="yes" checked={touchpointForm.locked === 'yes'} onChange={() => setTouchpointForm({ ...touchpointForm, locked: 'yes' })} /> Yes
                     </label>
                     <label className="flex items-center gap-1 text-sm">
-                      <input type="radio" name="locked" value="no" defaultChecked /> No
+                      <input type="radio" name="locked" value="no" checked={touchpointForm.locked === 'no'} onChange={() => setTouchpointForm({ ...touchpointForm, locked: 'no' })} /> No
                     </label>
                   </div>
                 </div>
@@ -4322,18 +4467,20 @@ export default function IntellegesQMS() {
                   <p className="text-xs text-gray-500 mb-2">Send automated reminder notifications</p>
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-1 text-sm">
-                      <input type="radio" name="reminder" value="yes" defaultChecked /> Yes
+                      <input type="radio" name="reminder" value="yes" checked={touchpointForm.reminder === 'yes'} onChange={() => setTouchpointForm({ ...touchpointForm, reminder: 'yes' })} /> Yes
                     </label>
                     <label className="flex items-center gap-1 text-sm">
-                      <input type="radio" name="reminder" value="no" /> No
+                      <input type="radio" name="reminder" value="no" checked={touchpointForm.reminder === 'no'} onChange={() => setTouchpointForm({ ...touchpointForm, reminder: 'no' })} /> No
                     </label>
                   </div>
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Purpose</label>
-                <textarea 
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-20" 
+                <textarea
+                  value={touchpointForm.purpose}
+                  onChange={(e) => setTouchpointForm({ ...touchpointForm, purpose: e.target.value })}
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-20"
                   placeholder="Describe the purpose of this touchpoint..."
                 />
               </div>
@@ -4350,25 +4497,41 @@ export default function IntellegesQMS() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Start Date *</label>
-                  <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                  <input
+                    type="date"
+                    value={touchpointForm.startDate}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, startDate: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">End Date *</label>
-                  <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                  <input
+                    type="date"
+                    value={touchpointForm.endDate}
+                    onChange={(e) => setTouchpointForm({ ...touchpointForm, endDate: e.target.value })}
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setTouchpointModal({ open: false, touchpoint: null })}
-              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+            <button
+              onClick={handleTouchpointClose}
+              disabled={touchpointSaving}
+              className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Save
+            <button
+              onClick={handleTouchpointSave}
+              disabled={!isFormValid || touchpointSaving}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 flex items-center gap-2"
+              style={{ backgroundColor: isFormValid ? '#2496F4' : '#9CA3AF' }}
+            >
+              {touchpointSaving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : 'Save'}
             </button>
           </div>
         </div>
@@ -4380,18 +4543,62 @@ export default function IntellegesQMS() {
   const renderPartnertypeModal = () => {
     if (!partnertypeModal.open) return null;
 
+    const isFormValid = partnertypeForm.touchpoint && partnertypeForm.name;
+
+    const handlePartnertypeClose = () => {
+      setPartnertypeForm({ touchpoint: '', category: '', name: '', description: '' });
+      setPartnertypeModal({ open: false, partnertype: null });
+    };
+
+    const handlePartnertypeSave = async () => {
+      if (!isFormValid) {
+        alert('Please fill in all required fields (Touchpoint and Name)');
+        return;
+      }
+
+      setPartnertypeSaving(true);
+      try {
+        const response = await fetch('/api/trpc/partnerTypes.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            json: {
+              name: partnertypeForm.name,
+              description: partnertypeForm.description || null,
+              category: partnertypeForm.category || null,
+              touchpointId: parseInt(partnertypeForm.touchpoint),
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to create partnertype';
+          throw new Error(errorMsg);
+        }
+
+        alert('Partnertype created successfully!');
+        handlePartnertypeClose();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create partnertype');
+      } finally {
+        setPartnertypeSaving(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setPartnertypeModal({ open: false, partnertype: null })}
+        onClick={handlePartnertypeClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Partnertype - Manual</h2>
-            <button onClick={() => setPartnertypeModal({ open: false, partnertype: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handlePartnertypeClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4407,17 +4614,25 @@ export default function IntellegesQMS() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Touchpoint *</label>
-                <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={partnertypeForm.touchpoint}
+                  onChange={(e) => setPartnertypeForm({ ...partnertypeForm, touchpoint: e.target.value })}
+                >
                   <option value="">Select Touchpoint...</option>
-                  <option value="reps-2025">Reps and Certs 2025</option>
-                  <option value="cmmc-2025">CMMC Annual Review 2025</option>
-                  <option value="q1-onboard">Q1 Onboarding 2025</option>
+                  <option value="1">Reps and Certs 2025</option>
+                  <option value="2">CMMC Annual Review 2025</option>
+                  <option value="3">Q1 Onboarding 2025</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={partnertypeForm.category}
+                  onChange={(e) => setPartnertypeForm({ ...partnertypeForm, category: e.target.value })}
+                >
                   <option value="">Select Category (optional)...</option>
                   <option value="procurement">Procurement Type</option>
                   <option value="geographic">Geographic</option>
@@ -4430,28 +4645,42 @@ export default function IntellegesQMS() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g., FAR 15, Domestic, Small Business" />
+                <input
+                  type="text"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  placeholder="e.g., FAR 15, Domestic, Small Business"
+                  value={partnertypeForm.name}
+                  onChange={(e) => setPartnertypeForm({ ...partnertypeForm, name: e.target.value })}
+                />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea 
-                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-24" 
+                <textarea
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm h-24"
                   placeholder="Describe when this partnertype applies and any specific requirements..."
+                  value={partnertypeForm.description}
+                  onChange={(e) => setPartnertypeForm({ ...partnertypeForm, description: e.target.value })}
                 />
               </div>
             </div>
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setPartnertypeModal({ open: false, partnertype: null })}
+            <button
+              onClick={handlePartnertypeClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={partnertypeSaving}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Save
+            <button
+              onClick={handlePartnertypeSave}
+              disabled={!isFormValid || partnertypeSaving}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2496F4' }}
+            >
+              {partnertypeSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
@@ -4463,18 +4692,62 @@ export default function IntellegesQMS() {
   const renderGroupModal = () => {
     if (!groupModal.open) return null;
 
+    const isFormValid = groupForm.touchpoint && groupForm.name;
+
+    const handleGroupClose = () => {
+      setGroupForm({ touchpoint: '', name: '', description: '', collection: 'opened' });
+      setGroupModal({ open: false, group: null });
+    };
+
+    const handleGroupSave = async () => {
+      if (!isFormValid) {
+        alert('Please fill in all required fields (Touchpoint and Name)');
+        return;
+      }
+
+      setGroupSaving(true);
+      try {
+        const response = await fetch('/api/trpc/groups.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            json: {
+              name: groupForm.name,
+              description: groupForm.description || null,
+              touchpointId: parseInt(groupForm.touchpoint),
+              collection: groupForm.collection,
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to create group';
+          throw new Error(errorMsg);
+        }
+
+        alert('Group created successfully!');
+        handleGroupClose();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create group');
+      } finally {
+        setGroupSaving(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setGroupModal({ open: false, group: null })}
+        onClick={handleGroupClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-xl"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Group - Manual</h2>
-            <button onClick={() => setGroupModal({ open: false, group: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleGroupClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4490,29 +4763,49 @@ export default function IntellegesQMS() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Touchpoint *</label>
-                <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={groupForm.touchpoint}
+                  onChange={(e) => setGroupForm({ ...groupForm, touchpoint: e.target.value })}
+                >
                   <option value="">Select Touchpoint...</option>
-                  <option value="reps-2025">Reps and Certs 2025</option>
-                  <option value="cmmc-2025">CMMC Annual Review 2025</option>
-                  <option value="q1-onboard">Q1 Onboarding 2025</option>
+                  <option value="1">Reps and Certs 2025</option>
+                  <option value="2">CMMC Annual Review 2025</option>
+                  <option value="3">Q1 Onboarding 2025</option>
                 </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="e.g., APAC Region, Manufacturing Division" />
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    placeholder="e.g., APAC Region, Manufacturing Division"
+                    value={groupForm.name}
+                    onChange={(e) => setGroupForm({ ...groupForm, name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" placeholder="Brief description of the group" />
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    placeholder="Brief description of the group"
+                    value={groupForm.description}
+                    onChange={(e) => setGroupForm({ ...groupForm, description: e.target.value })}
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Group Collection *</label>
                 <p className="text-xs text-gray-500 mb-2">Controls whether People or Partners can be added to this group without RBAC authorization.</p>
-                <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                <select
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  value={groupForm.collection}
+                  onChange={(e) => setGroupForm({ ...groupForm, collection: e.target.value })}
+                >
                   <option value="opened">Opened - Anyone with access can add members</option>
                   <option value="closed">Closed - Requires RBAC authorization to add members</option>
                 </select>
@@ -4521,14 +4814,20 @@ export default function IntellegesQMS() {
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setGroupModal({ open: false, group: null })}
+            <button
+              onClick={handleGroupClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={groupSaving}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Save
+            <button
+              onClick={handleGroupSave}
+              disabled={!isFormValid || groupSaving}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2496F4' }}
+            >
+              {groupSaving ? 'Saving...' : 'Save'}
             </button>
           </div>
         </div>
@@ -4862,18 +5161,73 @@ export default function IntellegesQMS() {
   const renderEnterpriseModal = () => {
     if (!enterpriseModal.open) return null;
 
+    const isFormValid = enterpriseForm.name && enterpriseForm.address1 && enterpriseForm.city &&
+                        enterpriseForm.state && enterpriseForm.zipcode && enterpriseForm.startDate && enterpriseForm.endDate;
+
+    const handleEnterpriseClose = () => {
+      setEnterpriseForm({
+        name: '', country: 'United States', address1: '', address2: '', city: '', state: '', zipcode: '',
+        licenseType: 'trial', partnerMax: 100, startDate: '', endDate: ''
+      });
+      setEnterpriseModal({ open: false, enterprise: null });
+    };
+
+    const handleEnterpriseSave = async () => {
+      if (!isFormValid) {
+        alert('Please fill in all required fields');
+        return;
+      }
+
+      setEnterpriseSaving(true);
+      try {
+        const response = await fetch('/api/trpc/enterprises.create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            json: {
+              name: enterpriseForm.name,
+              country: enterpriseForm.country,
+              address1: enterpriseForm.address1,
+              address2: enterpriseForm.address2 || null,
+              city: enterpriseForm.city,
+              state: enterpriseForm.state,
+              zipcode: enterpriseForm.zipcode,
+              licenseType: enterpriseForm.licenseType,
+              partnerMax: enterpriseForm.partnerMax,
+              startDate: enterpriseForm.startDate,
+              endDate: enterpriseForm.endDate,
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || 'Failed to create enterprise';
+          throw new Error(errorMsg);
+        }
+
+        alert('Enterprise created successfully!');
+        handleEnterpriseClose();
+      } catch (error) {
+        alert(error instanceof Error ? error.message : 'Failed to create enterprise');
+      } finally {
+        setEnterpriseSaving(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setEnterpriseModal({ open: false, enterprise: null })}
+        onClick={handleEnterpriseClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add Enterprise - Manual</h2>
-            <button onClick={() => setEnterpriseModal({ open: false, enterprise: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleEnterpriseClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4885,11 +5239,20 @@ export default function IntellegesQMS() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    value={enterpriseForm.name}
+                    onChange={(e) => setEnterpriseForm({ ...enterpriseForm, name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                  <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                  <select
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    value={enterpriseForm.country}
+                    onChange={(e) => setEnterpriseForm({ ...enterpriseForm, country: e.target.value })}
+                  >
                     <option value="United States">United States</option>
                     <option value="Canada">Canada</option>
                     <option value="Mexico">Mexico</option>
@@ -4898,29 +5261,60 @@ export default function IntellegesQMS() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address 1 *</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    value={enterpriseForm.address1}
+                    onChange={(e) => setEnterpriseForm({ ...enterpriseForm, address1: e.target.value })}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Address 2</label>
-                  <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                  <input
+                    type="text"
+                    className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    value={enterpriseForm.address2}
+                    onChange={(e) => setEnterpriseForm({ ...enterpriseForm, address2: e.target.value })}
+                  />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">City *</label>
-                    <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    <input
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      value={enterpriseForm.city}
+                      onChange={(e) => setEnterpriseForm({ ...enterpriseForm, city: e.target.value })}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">State *</label>
-                    <select className="w-full border border-gray-300 rounded px-3 py-2 text-sm">
+                    <select
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      value={enterpriseForm.state}
+                      onChange={(e) => setEnterpriseForm({ ...enterpriseForm, state: e.target.value })}
+                    >
                       <option value="">Select...</option>
                       <option value="CA">California</option>
                       <option value="TX">Texas</option>
                       <option value="NY">New York</option>
+                      <option value="FL">Florida</option>
+                      <option value="IL">Illinois</option>
+                      <option value="PA">Pennsylvania</option>
+                      <option value="OH">Ohio</option>
+                      <option value="GA">Georgia</option>
+                      <option value="NC">North Carolina</option>
+                      <option value="MI">Michigan</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Zipcode *</label>
-                    <input type="text" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    <input
+                      type="text"
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      value={enterpriseForm.zipcode}
+                      onChange={(e) => setEnterpriseForm({ ...enterpriseForm, zipcode: e.target.value })}
+                    />
                   </div>
                 </div>
               </div>
@@ -4934,25 +5328,52 @@ export default function IntellegesQMS() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">License Type *</label>
                   <div className="flex items-center gap-6">
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="radio" name="license" value="paid" /> Paid License
+                      <input
+                        type="radio"
+                        name="license"
+                        value="paid"
+                        checked={enterpriseForm.licenseType === 'paid'}
+                        onChange={(e) => setEnterpriseForm({ ...enterpriseForm, licenseType: e.target.value })}
+                      /> Paid License
                     </label>
                     <label className="flex items-center gap-2 text-sm">
-                      <input type="radio" name="license" value="trial" defaultChecked /> Free Trial
+                      <input
+                        type="radio"
+                        name="license"
+                        value="trial"
+                        checked={enterpriseForm.licenseType === 'trial'}
+                        onChange={(e) => setEnterpriseForm({ ...enterpriseForm, licenseType: e.target.value })}
+                      /> Free Trial
                     </label>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Partner Max (User Limit) *</label>
-                  <input type="number" className="w-32 border border-gray-300 rounded px-3 py-2 text-sm" defaultValue={100} />
+                  <input
+                    type="number"
+                    className="w-32 border border-gray-300 rounded px-3 py-2 text-sm"
+                    value={enterpriseForm.partnerMax}
+                    onChange={(e) => setEnterpriseForm({ ...enterpriseForm, partnerMax: parseInt(e.target.value) || 100 })}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
-                    <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    <input
+                      type="date"
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      value={enterpriseForm.startDate}
+                      onChange={(e) => setEnterpriseForm({ ...enterpriseForm, startDate: e.target.value })}
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">End Date *</label>
-                    <input type="date" className="w-full border border-gray-300 rounded px-3 py-2 text-sm" />
+                    <input
+                      type="date"
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                      value={enterpriseForm.endDate}
+                      onChange={(e) => setEnterpriseForm({ ...enterpriseForm, endDate: e.target.value })}
+                    />
                   </div>
                 </div>
               </div>
@@ -4967,14 +5388,20 @@ export default function IntellegesQMS() {
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setEnterpriseModal({ open: false, enterprise: null })}
+            <button
+              onClick={handleEnterpriseClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={enterpriseSaving}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              OK
+            <button
+              onClick={handleEnterpriseSave}
+              disabled={!isFormValid || enterpriseSaving}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2496F4' }}
+            >
+              {enterpriseSaving ? 'Saving...' : 'OK'}
             </button>
           </div>
         </div>
