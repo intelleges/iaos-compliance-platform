@@ -153,14 +153,25 @@ export function EnterpriseBatchUploadDialog({
             <Alert>
               <FileSpreadsheet className="h-4 w-4" />
               <AlertDescription>
-                <div className="mb-3">
-                  <a 
-                    href="/templates/Enterprise_Import_Template.xlsx" 
-                    download
-                    className="text-blue-600 hover:text-blue-800 font-semibold underline"
-                  >
-                    📥 Download Enterprise Import Template (.xlsx)
-                  </a>
+                <div className="mb-3 space-y-2">
+                  <div className="font-semibold text-gray-700">📥 Download Template:</div>
+                  <div className="flex gap-4">
+                    <a 
+                      href="/templates/Enterprise_Import_Template_Blank.xlsx" 
+                      download
+                      className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                    >
+                      📄 Blank Template
+                    </a>
+                    <span className="text-gray-400">|</span>
+                    <a 
+                      href="/templates/Enterprise_Import_Template_Sample.xlsx" 
+                      download
+                      className="text-green-600 hover:text-green-800 font-semibold underline"
+                    >
+                      📊 Template with Sample Data
+                    </a>
+                  </div>
                 </div>
                 <strong>Template Columns:</strong>
                 <ul className="list-disc list-inside mt-2 text-sm">
