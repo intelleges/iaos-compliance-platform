@@ -97,7 +97,24 @@ export default function Settings() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-500">Coming soon: AMS Batch Load (INT.DOC.64 Section 6.4)</p>
+              <div className="space-y-4">
+                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                  <div className="mb-3">
+                    <a 
+                      href="/templates/Questionnaire_AMS_Import_Template.xlsx" 
+                      download
+                      className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                    >
+                      📥 Download AMS (Email Template) Import Template (.xlsx)
+                    </a>
+                  </div>
+                  <p className="text-sm text-gray-700 font-medium mb-1">Template Columns:</p>
+                  <p className="text-xs text-gray-600">
+                    Template Type, Template Code, Subject, Body HTML, Footer Text, Signature Text, Send Factor, Is Active
+                  </p>
+                </div>
+                <p className="text-gray-500 text-sm">Upload functionality coming soon (INT.DOC.64 Section 6.4)</p>
+              </div>
             </CardContent>
           </Card>
         </div>

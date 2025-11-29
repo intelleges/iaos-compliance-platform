@@ -166,6 +166,22 @@ export function UserBatchUploadDialog({
               </label>
             </div>
 
+            <div className="p-4 bg-gray-50 rounded-lg border">
+              <div className="mb-3">
+                <a 
+                  href="/templates/Person_Import_Template.xlsx" 
+                  download
+                  className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                >
+                  📥 Download Person (User) Import Template (.xlsx)
+                </a>
+              </div>
+              <p className="text-sm text-gray-700 font-medium mb-1">Template Columns:</p>
+              <p className="text-xs text-gray-600">
+                Email, First Name, Last Name, Role, Title, Department, Phone, Is Active, Groups, SSO ID
+              </p>
+            </div>
+
             {file && (
               <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <FileSpreadsheet className="h-8 w-8 text-blue-600" />

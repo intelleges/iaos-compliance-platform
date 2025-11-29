@@ -169,11 +169,20 @@ export function QMSUploadDialog({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              The QMS template must follow the standard format with 27 columns:
-              QID, Page, Surveyset, Survey, Question, Response, Title, Required, Length, titleLength,
-              skipLogic, skipLogicAnswer, skipLogicJump, CommentBoxMessageText, UploadMessageText,
-              CalendarMessageText, CommentType, yValue, nValue, naValue, otherValue, qWeight,
-              spinOffQuestionnaire, spinoffid, emailalert, emailalertlist, accessLevel.
+              <div className="mb-3">
+                <a 
+                  href="/templates/Questionnaire_QMS_Import_Template.xlsx" 
+                  download
+                  className="text-blue-600 hover:text-blue-800 font-semibold underline"
+                >
+                  📥 Download QMS Import Template (.xlsx)
+                </a>
+              </div>
+              <strong>Template Columns (13):</strong>
+              <p className="text-sm mt-1">
+                QID, Page, Survey Set, Question Text, Response Type, Response Options, 
+                Title/Export Name, Required, Help Text, CommentType, Skip Logic, Regulatory Ref, Weight
+              </p>
             </AlertDescription>
           </Alert>
           
