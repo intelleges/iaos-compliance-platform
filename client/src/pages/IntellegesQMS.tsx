@@ -33,7 +33,10 @@ export default function IntellegesQMS() {
   const [partnerManualModal, setPartnerManualModal] = useState({ open: false, mode: 'add', partner: null });
   const [personFormTab, setPersonFormTab] = useState('personal'); // 'personal', 'address', 'organization', 'access'
   const [spreadsheetUploadModal, setSpreadsheetUploadModal] = useState({ open: false, entity: null });
-  
+  const [spreadsheetUploadFile, setSpreadsheetUploadFile] = useState<File | null>(null);
+  const [spreadsheetUploading, setSpreadsheetUploading] = useState(false);
+  const spreadsheetFileInputRef = useRef<HTMLInputElement>(null);
+
   // Protocol & Touchpoint Modal States
   const [protocolModal, setProtocolModal] = useState({ open: false, protocol: null });
   const [touchpointModal, setTouchpointModal] = useState({ open: false, touchpoint: null });
@@ -4137,9 +4140,10 @@ export default function IntellegesQMS() {
   // Generic Spreadsheet Upload Modal (for all entities except Partner which has its own)
   const renderSpreadsheetUploadModal = () => {
     if (!spreadsheetUploadModal.open) return null;
-    
+
     const entityName = spreadsheetUploadModal.entity?.charAt(0).toUpperCase() + spreadsheetUploadModal.entity?.slice(1);
-    
+    const canUpload = spreadsheetUploadFile && !spreadsheetUploading;
+
     // Template columns by entity type - matches actual form fields
     const templateInfo = {
       person: 'Title, First Name, Last Name, Suffix, Country, Address 1, Address 2, City, State, Zipcode, Manager, Roles, Groups',
@@ -4154,18 +4158,100 @@ export default function IntellegesQMS() {
       cms: 'See CMS template - ElementKey, PageSection, DefaultText, HTMLAllowed',
     };
 
+    // API endpoint mapping by entity type
+    const apiEndpoints = {
+      enterprise: '/api/trpc/enterprises.uploadSpreadsheet',
+      protocol: '/api/trpc/protocols.uploadSpreadsheet',
+      touchpoint: '/api/trpc/touchpoint.uploadSpreadsheet',
+      partnertype: '/api/trpc/partnertypes.uploadSpreadsheet',
+      group: '/api/trpc/groups.uploadSpreadsheet',
+      person: '/api/trpc/persons.uploadSpreadsheet',
+    };
+
+    const handleSpreadsheetClose = () => {
+      setSpreadsheetUploadFile(null);
+      setSpreadsheetUploadModal({ open: false, entity: null });
+    };
+
+    const handleSpreadsheetFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+        setSpreadsheetUploadFile(e.target.files[0]);
+      }
+    };
+
+    const handleSpreadsheetUpload = async () => {
+      if (!canUpload || !spreadsheetUploadFile) return;
+
+      const entity = spreadsheetUploadModal.entity;
+      const endpoint = apiEndpoints[entity];
+
+      if (!endpoint) {
+        alert(`Upload not yet implemented for ${entityName}. Please use manual entry.`);
+        return;
+      }
+
+      setSpreadsheetUploading(true);
+      try {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          try {
+            const base64Data = event.target?.result as string;
+            const base64Content = base64Data.split(',')[1];
+
+            const response = await fetch(endpoint, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              credentials: 'include',
+              body: JSON.stringify({
+                json: {
+                  fileData: base64Content,
+                  fileName: spreadsheetUploadFile.name,
+                }
+              }),
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => null);
+              const errorMsg = errorData?.error?.json?.message || errorData?.error?.message || `Failed to upload ${entityName}`;
+              throw new Error(errorMsg);
+            }
+
+            const result = await response.json();
+            const importedCount = result.result?.data?.json?.imported || result.result?.data?.json?.count || 0;
+
+            alert(`Successfully imported ${importedCount} ${entityName} records!`);
+            handleSpreadsheetClose();
+          } catch (error) {
+            alert(error instanceof Error ? error.message : `Failed to upload ${entityName}`);
+          } finally {
+            setSpreadsheetUploading(false);
+          }
+        };
+
+        reader.onerror = () => {
+          alert('Failed to read file');
+          setSpreadsheetUploading(false);
+        };
+
+        reader.readAsDataURL(spreadsheetUploadFile);
+      } catch (error) {
+        alert(error instanceof Error ? error.message : `Failed to upload ${entityName}`);
+        setSpreadsheetUploading(false);
+      }
+    };
+
     return (
-      <div 
+      <div
         className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-        onClick={() => setSpreadsheetUploadModal({ open: false, entity: null })}
+        onClick={handleSpreadsheetClose}
       >
-        <div 
+        <div
           className="bg-white rounded-lg shadow-xl w-full max-w-md"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-800">Add {entityName} via Spreadsheet</h2>
-            <button onClick={() => setSpreadsheetUploadModal({ open: false, entity: null })} className="text-gray-400 hover:text-gray-600">
+            <button onClick={handleSpreadsheetClose} className="text-gray-400 hover:text-gray-600">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -4180,19 +4266,48 @@ export default function IntellegesQMS() {
               <p className="text-xs text-gray-500 mt-1">Use this template to ensure your data is formatted correctly.</p>
             </div>
 
-            {/* Drag and Drop Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors">
-              <Upload className="w-10 h-10 mx-auto text-gray-400 mb-3" />
-              <p className="text-sm text-gray-600 mb-4">Drag and drop your spreadsheet here, or</p>
-              <div className="flex justify-center gap-3">
-                <button className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50">
-                  Browse Files
-                </button>
-                <button className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50">
-                  Google Drive
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-4">Accepted formats: .xlsx, .xls, .csv, .ods (max 25 MB)</p>
+            {/* File Upload Area */}
+            <div
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors cursor-pointer ${
+                spreadsheetUploadFile ? 'border-green-400 bg-green-50' : 'border-gray-300 hover:border-blue-400'
+              }`}
+              onClick={() => spreadsheetFileInputRef.current?.click()}
+            >
+              <input
+                ref={spreadsheetFileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv,.ods"
+                onChange={handleSpreadsheetFileSelect}
+                className="hidden"
+              />
+              {spreadsheetUploadFile ? (
+                <div className="space-y-2">
+                  <Upload className="w-10 h-10 mx-auto text-green-500" />
+                  <p className="font-medium text-gray-800">{spreadsheetUploadFile.name}</p>
+                  <p className="text-sm text-gray-500">{(spreadsheetUploadFile.size / 1024).toFixed(2)} KB</p>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setSpreadsheetUploadFile(null); }}
+                    className="text-sm text-red-600 hover:text-red-700 underline"
+                  >
+                    Remove file
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Upload className="w-10 h-10 mx-auto text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-600 mb-4">Drag and drop your spreadsheet here, or</p>
+                  <div className="flex justify-center gap-3">
+                    <button
+                      type="button"
+                      className="px-4 py-2 border border-gray-300 rounded text-sm hover:bg-gray-50 bg-white"
+                    >
+                      Browse Files
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-4">Accepted formats: .xlsx, .xls, .csv, .ods (max 25 MB)</p>
+                </>
+              )}
             </div>
 
             {/* Template Columns Info */}
@@ -4204,14 +4319,20 @@ export default function IntellegesQMS() {
           </div>
 
           <div className="p-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
-            <button 
-              onClick={() => setSpreadsheetUploadModal({ open: false, entity: null })}
+            <button
+              onClick={handleSpreadsheetClose}
               className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+              disabled={spreadsheetUploading}
             >
               Cancel
             </button>
-            <button className="px-4 py-2 text-sm text-white rounded" style={{ backgroundColor: '#2496F4' }}>
-              Upload
+            <button
+              onClick={handleSpreadsheetUpload}
+              disabled={!canUpload}
+              className="px-4 py-2 text-sm text-white rounded disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#2496F4' }}
+            >
+              {spreadsheetUploading ? 'Uploading...' : `Upload ${entityName}`}
             </button>
           </div>
         </div>
