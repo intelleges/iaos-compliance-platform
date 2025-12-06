@@ -55,17 +55,26 @@ export function serveStatic(app: Express) {
     process.env.NODE_ENV === "development"
       ? path.resolve(__dirname, "../..", "dist", "public")
       : path.resolve(__dirname, "public");
+  
+  const indexPath = path.resolve(distPath, "index.html");
+  
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
+    );
+  }
+  
+  if (!fs.existsSync(indexPath)) {
+    console.error(
+      `Could not find index.html at: ${indexPath}`
     );
   }
 
   app.use(express.static(distPath));
 
   // SPA Fallback - send non-API routes to index.html
-  app.get("*", (req, res, next) => {
+  app.use((req, res, next) => {
     if (req.path.startsWith("/api")) return next();
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.sendFile(indexPath);
   });
 }
