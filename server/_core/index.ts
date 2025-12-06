@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import path from "path";
+import { fileURLToPath } from "url";
 import session from "express-session";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
@@ -87,6 +89,28 @@ async function startServer() {
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // -------------------------------
+  // SPA FALLBACK FOR LIVE DEPLOYMENT
+  // -------------------------------
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
+  // Serve the built client (dist/public)
+  const clientDist = path.resolve(__dirname, "../..", "dist/public");
+
+  // Fallback: any unknown route → index.html
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api")) return next(); // leave API untouched
+
+    const indexFile = path.join(clientDist, "index.html");
+    res.sendFile(indexFile, (err) => {
+      if (err) {
+        console.error("SPA fallback error:", err);
+        res.status(500).send("Server error");
+      }
+    });
+  });
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
