@@ -76,10 +76,4 @@ export function serveStatic(app: Express) {
 
   // Serve static assets (JS, CSS, images, etc.)
   app.use(express.static(distPath));
-
-  // SPA Fallback - send all non-API routes to index.html
-  app.get("*", (req, res) => {
-    console.log(`[Fallback] Serving ${req.path} -> index.html`);
-    res.sendFile(indexPath);
-  });
 }
