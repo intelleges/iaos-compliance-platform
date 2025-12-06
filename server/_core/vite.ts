@@ -58,6 +58,10 @@ export function serveStatic(app: Express) {
   
   const indexPath = path.resolve(distPath, "index.html");
   
+  console.log(`[Static] Serving from: ${distPath}`);
+  console.log(`[Static] Index.html at: ${indexPath}`);
+  console.log(`[Static] Index.html exists: ${fs.existsSync(indexPath)}`);
+  
   if (!fs.existsSync(distPath)) {
     console.error(
       `Could not find the build directory: ${distPath}, make sure to build the client first`
@@ -70,11 +74,12 @@ export function serveStatic(app: Express) {
     );
   }
 
+  // Serve static assets (JS, CSS, images, etc.)
   app.use(express.static(distPath));
 
-  // SPA Fallback - send non-API routes to index.html
-  app.use((req, res, next) => {
-    if (req.path.startsWith("/api")) return next();
+  // SPA Fallback - send all non-API routes to index.html
+  app.get("*", (req, res) => {
+    console.log(`[Fallback] Serving ${req.path} -> index.html`);
     res.sendFile(indexPath);
   });
 }
