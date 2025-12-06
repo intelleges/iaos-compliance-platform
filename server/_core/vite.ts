@@ -51,29 +51,6 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath =
-    process.env.NODE_ENV === "development"
-      ? path.resolve(__dirname, "../..", "dist", "public")
-      : path.resolve(__dirname, "public");
-  
-  const indexPath = path.resolve(distPath, "index.html");
-  
-  console.log(`[Static] Serving from: ${distPath}`);
-  console.log(`[Static] Index.html at: ${indexPath}`);
-  console.log(`[Static] Index.html exists: ${fs.existsSync(indexPath)}`);
-  
-  if (!fs.existsSync(distPath)) {
-    console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
-  }
-  
-  if (!fs.existsSync(indexPath)) {
-    console.error(
-      `Could not find index.html at: ${indexPath}`
-    );
-  }
-
-  // Serve static assets (JS, CSS, images, etc.)
-  app.use(express.static(distPath));
+  // This function is no longer used - static serving is done in index.ts
+  // Keeping for backward compatibility but it's a no-op
 }

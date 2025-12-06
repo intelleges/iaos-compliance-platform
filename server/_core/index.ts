@@ -37,6 +37,15 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
   
+  // Resolve correct directory in ESM
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  
+  // Serve built client files
+  const clientDist = path.resolve(__dirname, "../..", "dist/public");
+  app.use(express.static(clientDist));
+  console.log("Serving client from:", clientDist);
+  
   // Register event handlers
   registerEventHandlers();
   
@@ -79,8 +88,6 @@ async function startServer() {
   // development mode uses Vite, production mode uses static files
   if (process.env.NODE_ENV === "development") {
     await setupVite(app, server);
-  } else {
-    serveStatic(app);
   }
 
   const preferredPort = parseInt(process.env.PORT || "3000");
@@ -93,21 +100,17 @@ async function startServer() {
   // -------------------------------
   // SPA FALLBACK FOR LIVE DEPLOYMENT
   // -------------------------------
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-
-  // Serve the built client (dist/public)
-  const clientDist = path.resolve(__dirname, "../..", "dist/public");
-
-  // Fallback: any unknown route → index.html
+  // Handle all non-API routes by returning index.html
   app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api")) return next(); // leave API untouched
+    if (req.path.startsWith("/api")) {
+      return next(); // Don't intercept API routes
+    }
 
     const indexFile = path.join(clientDist, "index.html");
     res.sendFile(indexFile, (err) => {
       if (err) {
-        console.error("SPA fallback error:", err);
-        res.status(500).send("Server error");
+        console.error("Error serving SPA fallback:", err);
+        return res.status(500).send("Internal Server Error");
       }
     });
   });
