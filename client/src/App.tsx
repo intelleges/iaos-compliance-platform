@@ -18,6 +18,7 @@ import Groups from "./pages/Groups";
 import ReviewerDashboard from "./pages/ReviewerDashboard";
 import TestReportDashboard from "./pages/TestReportDashboard";
 import AuditLogViewer from "./pages/AuditLogViewer";
+import SSOLogin from "./pages/SSOLogin";
 
 // Partner-facing pages
 import PartnerLogin from "./pages/PartnerLogin";
@@ -36,10 +37,13 @@ import SupplierSuccess from "./pages/SupplierSuccess";
 function Router() {
   return (
     <Switch>
+      {/* SSO Login Route */}
+      <Route path={"/login"} component={SSOLogin} />
+      
       {/* Admin/Internal Routes */}
       <Route path={"/"} component={IntellegesQMS} />
       <Route path={"/old-dashboard"} component={Home} />
-      <Route path={"/dashboard"} component={Home} />
+      <Route path={"/dashboard"} component={IntellegesQMS} />
       <Route path={"/response-tracking"} component={ResponseTracking} />
       <Route path={"/enterprises"} component={Enterprise} />
       <Route path={"/partners"} component={Partner} />
