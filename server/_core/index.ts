@@ -3,6 +3,7 @@ import express from "express";
 import { createServer } from "http";
 import net from "net";
 import path from "path";
+import fs from "fs";
 import { fileURLToPath } from "url";
 import session from "express-session";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
@@ -42,9 +43,19 @@ async function startServer() {
   const __dirname = path.dirname(__filename);
   
   // Serve built client files
-  const clientDist = path.resolve(__dirname, "../..", "dist/public");
-  app.use(express.static(clientDist));
+  // In production: compiled code is at dist/index.js, so __dirname = dist/
+  // Therefore dist/public is at path.resolve(__dirname, "public")
+  const clientDist = path.resolve(__dirname, "public");
+  
+  console.log("__filename:", __filename);
+  console.log("__dirname:", __dirname);
   console.log("Serving client from:", clientDist);
+  console.log("clientDist exists:", fs.existsSync(clientDist));
+  if (fs.existsSync(clientDist)) {
+    console.log("Files in clientDist:", fs.readdirSync(clientDist));
+  }
+  
+  app.use(express.static(clientDist));
   
   // Register event handlers
   registerEventHandlers();
